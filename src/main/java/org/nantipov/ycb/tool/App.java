@@ -14,7 +14,7 @@ public class App {
         AnsiConsole.systemInstall();
         parseArgsAndLaunchCommand(args);
         AnsiConsole.systemUninstall();
-        System.out.println();
+        System.out.println(ansi().reset().a(""));
     }
 
     private static void parseArgsAndLaunchCommand(String[] args) {
