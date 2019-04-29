@@ -23,11 +23,13 @@
 hs_err_pid*
 
 # IDEA
-/target/
-/.idea/
+/target
+/.idea
 *.iml
 
 # gradle
 .gradle
-/build/
-/out/
+
+# Ignore Gradle build output directory
+/build
+/out
