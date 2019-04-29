@@ -1,0 +1,8 @@
+Usage:
+  java -jar @|green ycb-tool-all.jar|@ [@|yellow command|@] [@|yellow args|@]
+
+Commands:
+  - @|yellow init|@   - creates a new project (directory and necessary initial files).
+  - @|yellow update|@ - @|bold *default*|@ looks for project files in the current directory and
+             does overall project re-evaluation.
+  - @|yellow help|@   - prints this message.
