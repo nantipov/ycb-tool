@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.nantipov.ycb.tool.domain.ProjectConfiguration;
 import org.nantipov.ycb.tool.domain.VideoPadProject;
+import org.nantipov.ycb.tool.domain.VideoPadTrack;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -11,6 +12,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -21,6 +24,10 @@ import java.util.stream.IntStream;
 public class VideoPadProjectStorage {
 
     private static final Pattern LABELS_PATTERN = Pattern.compile("%26%26labels\\.(\\w+)");
+    private static final String EDITION_TRACK_TOKEN = "__";
+    private static final String PROPERTY_SEPARATOR = "&";
+    private static final String PROPERTY_ASSIGMENT_SIGN = "=";
+    private static final String PROPERTY_H = "h";
 
     private final Path projectDirectory;
 
@@ -48,9 +55,40 @@ public class VideoPadProjectStorage {
                                     ProjectConfiguration projectConfig) throws IOException {
         try (PrintStream out = new PrintStream(Files.newOutputStream(getEditionProjectFile(projectName, edition)))) {
             Files.lines(getInitialProjectFile(projectName), Charsets.UTF_8)
-                 .map(line -> processLabels(line, edition, projectConfig))
+                 .map(line -> processLine(line, edition, projectConfig))
                  .forEach(out::println);
         }
+    }
+
+    /*
+    h=921731
+    &name=Audio%20Track%201&output=[0|1]
+    &type=1 - video track
+    &type=2 - audio track
+    */
+
+    private String processLine(String line, String edition, ProjectConfiguration projectConfig) {
+        String outputLine = line;
+        outputLine = processLabels(outputLine, edition, projectConfig);
+        outputLine = processTracks(outputLine, edition, projectConfig);
+        return outputLine;
+    }
+
+    private String processTracks(String line, String edition, ProjectConfiguration projectConfig) {
+        if ((line.contains("&type=1&") || line.contains("&type=2&")) && line.contains(EDITION_TRACK_TOKEN)) {
+            VideoPadTrack track = trackFromLine(line);
+            String type = track.getProperties().getOrDefault("type", "unknown");
+            if (type.equals("1") || type.equals("2")) {
+                String trackName = track.getProperties().getOrDefault("name", "unknown");
+                if (trackName.endsWith(EDITION_TRACK_TOKEN + edition)) {
+                    track.getProperties().put("output", "1");
+                } else if (trackName.contains(EDITION_TRACK_TOKEN)) {
+                    track.getProperties().put("output", "0");
+                }
+                return trackToLine(track);
+            }
+        }
+        return line;
     }
 
     private String processLabels(String line, String edition, ProjectConfiguration projectConfig) {
@@ -112,5 +150,39 @@ public class VideoPadProjectStorage {
             index += to.length(); // Move to the end of the replacement
             index = builder.indexOf(from, index);
         }
+    }
+
+    private static VideoPadTrack trackFromLine(String line) {
+        VideoPadTrack track = new VideoPadTrack();
+        String[] elements = line.split(PROPERTY_SEPARATOR);
+        Arrays.stream(elements)
+              .filter(element -> element.contains(PROPERTY_ASSIGMENT_SIGN))
+              .map(String::trim)
+              .map(element ->
+                           new AbstractMap.SimpleImmutableEntry<>(
+                                   element.substring(0, element.indexOf(PROPERTY_ASSIGMENT_SIGN)),
+                                   element.substring(element.indexOf(PROPERTY_ASSIGMENT_SIGN) + 1)
+                           )
+              )
+              .forEach(entry -> {
+                  if (entry.getKey().equals(PROPERTY_H)) {
+                      track.setH(entry.getValue());
+                  } else {
+                      track.getProperties().put(entry.getKey(), entry.getValue());
+                  }
+              });
+        return track;
+    }
+
+    private static String trackToLine(VideoPadTrack track) {
+        StringBuilder output = new StringBuilder();
+        output.append(PROPERTY_H).append(PROPERTY_ASSIGMENT_SIGN).append(track.getH());
+        track.getProperties()
+             .forEach((key, value) -> output.append(PROPERTY_SEPARATOR)
+                                            .append(key)
+                                            .append(PROPERTY_ASSIGMENT_SIGN)
+                                            .append(value)
+             );
+        return output.toString();
     }
 }

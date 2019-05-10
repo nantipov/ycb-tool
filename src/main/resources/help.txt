@@ -6,3 +6,10 @@ Commands:
   - @|yellow update|@ - @|bold *default*|@ looks for project files in the current directory and
              does overall project re-evaluation.
   - @|yellow help|@   - prints this message.
+
+Project structure:
+  @|yellow Labels.|@
+    All labels are supposed to be indicated by @|green &&labels.labelName|@ pattern (e.g. &&labels.mainTitle).
+
+  @|yellow Tracks.|@
+    Edition depending tracks are indicated by @|green __edition|@ suffix (e.g. NarrativeAudioTrack_en).
