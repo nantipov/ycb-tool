@@ -12,4 +12,4 @@ Project structure:
     All labels are supposed to be indicated by @|green &&labels.labelName|@ pattern (e.g. &&labels.mainTitle).
 
   @|yellow Tracks.|@
-    Edition depending tracks are indicated by @|green __edition|@ suffix (e.g. NarrativeAudioTrack_en).
+    Edition depending tracks are indicated by @|green __edition|@ suffix (e.g. NarrativeAudioTrack__en).

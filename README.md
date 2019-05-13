@@ -31,5 +31,5 @@ Project structure:
     All label are supposed to be indicated by &&labels.labelName pattern (e.g. &&labels.mainTitle).
 
   Tracks.
-    Edition depending tracks are indicated by __edition suffix (e.g. NarrativeAudioTrack_en).
+    Edition depending tracks are indicated by __edition suffix (e.g. NarrativeAudioTrack__en).
 ```
